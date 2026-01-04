@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>IRCTC Reimagination - Faster, Smarter Booking</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <!-- Opening Screen -->
+    <div id="opening-screen" class="opening-screen">
+        <div class="logo-container">
+            <video class="logo-video" autoplay muted playsinline>
+                <source src="logo.mp4" type="video/mp4">
+                <img src="logo1.png" alt="IRCTC Logo" style="width: 300px; height: 300px; border-radius: 20px;">
+            </video>
+            <p class="loading-text">Loading<span class="loading-dots"></span></p>
+        </div>
+    </div>
+
+    <div id="custom-message-box"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); display: none; justify-content: center; align-items: center; z-index: 1000;">
+        <div class="message-content"
+            style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); text-align: center; max-width: 400px; width: 90%;">
+            <p id="message-text"></p>
+            <button onclick="hideMessageBox()"
+                style="margin-top: 15px; padding: 10px 20px; background-color: #f58220; color: white; border: none; border-radius: 4px; cursor: pointer;">OK</button>
+        </div>
+    </div>
+
+    <div id="auth-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-btn" onclick="hideAuthModal()">&times;</span>
+            <div class="auth-tabs">
+                <div class="auth-tab active" data-tab="login">Login</div>
+                <div class="auth-tab" data-tab="signup">Signup</div>
+            </div>
+
+            <form id="login-form" class="auth-form active">
+                <input type="text" id="login-username" placeholder="Username / Mobile" required>
+                <input type="password" id="login-password" placeholder="Password" required>
+
+                <div class="captcha-group">
+                    <div id="login-captcha">A1B2C3</div>
+                    <button type="button" class="refresh-captcha" onclick="refreshCaptcha('login')"><i
+                            class="fas fa-sync-alt"></i></button>
+                    <input type="text" id="login-captcha-input" placeholder="Enter Captcha" required
+                        style="flex-grow: 1;">
+                </div>
+
+                <div class="auth-links">
+                    <a onclick="showForgotPassword()">Forgot Password</a>
+                    <a onclick="showForgotUsername()">Forgot Username</a>
+                </div>
+
+                <div class="demo-fill" onclick="fillDemoCredentials()">
+                    <i class="fas fa-hand-point-right"></i> Use Demo Credentials
+                </div>
+
+                <button type="submit" class="auth-submit">Login</button>
+            </form>
+
+            <form id="signup-form" class="auth-form">
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="signup-firstname" placeholder="First Name" required style="flex: 1;">
+                    <input type="text" id="signup-lastname" placeholder="Last Name" required style="flex: 1;">
+                </div>
+                <input type="tel" id="signup-mobile" placeholder="Mobile Number (10 digits)" required maxlength="10">
+                <input type="email" id="signup-email" placeholder="Email Address" required>
+                <input type="password" id="signup-password" placeholder="Password (Min 8 chars, strong)" required>
+                <input type="password" id="signup-confirm-password" placeholder="Confirm Password" required>
+
+                <div class="captcha-group">
+                    <div id="signup-captcha">X9Y8Z7</div>
+                    <button type="button" class="refresh-captcha" onclick="refreshCaptcha('signup')"><i
+                            class="fas fa-sync-alt"></i></button>
+                    <input type="text" id="signup-captcha-input" placeholder="Enter Captcha" required
+                        style="flex-grow: 1;">
+                </div>
+
+                <button type="submit" class="auth-submit">Sign Up</button>
+            </form>
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <header class="navbar">
+        <div class="container">
+            <div class="logo">
+                <img src="logo1.png" alt="IRCTC Logo" class="header-logo-img" />
+            </div>
+            <nav class="nav-links">
+                <a href="#home" class="active">Home</a>
+                <a href="#" onclick="showBookingModal()">Book Tickets</a>
+                <a href="#" id="lite-mode-toggle">Lite Mode</a>
+                <a href="#" onclick="toggleAIChatbot()">AI Assistant</a>
+                <a href="#features">About</a>
+            </nav>
+            <button class="btn btn-primary" onclick="showAuthModal()">Login / Signup</button>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero-section" id="home">
+            <div class="container">
+                <div class="hero-content glass-card">
+                    <h1 class="hero-heading">Faster, Smarter, Simpler Train Booking</h1>
+                    <p class="hero-subtext">
+                        Reimagined IRCTC for millions of users – with real-time updates, AI assistant & Lite mode.
+                    </p>
+
+                    <!-- Booking Form -->
+                    <form class="booking-form" onsubmit="event.preventDefault(); showBookingModal();">
+                        <div class="form-group">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <input type="text" id="from-station" placeholder="From (e.g., Delhi)" required />
+                        </div>
+                        <div class="form-group">
+                            <i class="fas fa-arrow-right-long"></i>
+                            <input type="text" id="to-station" placeholder="To (e.g., Mumbai)" required />
+                        </div>
+                        <div class="form-group">
+                            <i class="fas fa-calendar-alt"></i>
+                            <input type="date" id="travel-date" value="2025-10-04" required />
+                        </div>
+                        <button type="submit" class="btn btn-search">
+                            <i class="fas fa-magnifying-glass"></i> Search
+                        </button>
+                    </form>
+                    <div class="predictive-suggestions">
+                        <small>Popular Routes: Delhi-Mumbai, Kolkata-Chennai, Bengaluru-Hyderabad</small>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PNR Status Check -->
+        <section class="pnr-section">
+            <div class="container">
+                <div class="pnr-card glass-card">
+                    <div class="pnr-input-group">
+                        <i class="fas fa-ticket-simple text-primary"></i>
+                        <input type="number" id="pnr-number" placeholder="Enter PNR Number (10 digits)"
+                            maxlength="10" />
+                        <button class="btn btn-search pnr-button" onclick="checkPNRStatus()">
+                            Check PNR Status
+                        </button>
+                    </div>
+                    <p class="pnr-status-result" id="pnr-result"></p>
+                </div>
+            </div>
+        </section>
+
+        <section class="popular-routes-section" id="popular-routes">
+            <div class="container">
+                <h2 class="section-title">Popular Routes</h2>
+                <p class="section-subtitle">Discover the most traveled routes across India with real-time availability
+                    and best prices.</p>
+
+                <!-- Route Category Tabs -->
+                <div class="route-tabs">
+                    <div class="route-tab active" data-category="all">
+                        <i class="fas fa-route"></i> All Routes
+                    </div>
+                    <div class="route-tab" data-category="metro">
+                        <i class="fas fa-city"></i> Metro Cities
+                    </div>
+                    <div class="route-tab" data-category="tourist">
+                        <i class="fas fa-camera-retro"></i> Tourist Destinations
+                    </div>
+                    <div class="route-tab" data-category="business">
+                        <i class="fas fa-briefcase"></i> Business Routes
+                    </div>
+                    <div class="route-tab" data-category="pilgrimage">
+                        <i class="fas fa-place-of-worship"></i> Pilgrimage
+                    </div>
+                </div>
+
+                <!-- Route Cards Grid -->
+                <div class="route-cards-grid">
+                    <!-- Card 1: New Delhi to Mumbai (Metro/Business) - Rajdhani Express -->
+                    <div class="route-card glass-card" data-categories="all metro business">
+                        <div class="card-image-placeholder" style="background-image: url('rajdhani.png');">
+                            <span class="card-tag">95% Popular</span>
+                        </div>
+                        <div class="card-content">
+                            <h3>New Delhi <i class="fas fa-arrow-right"></i> Mumbai Central</h3>
+                            <p class="route-stations">NDLS to CSMT | Train 12952 (Rajdhani Express)</p>
+                            <span class="route-info text-green">Avg. Journey: 16h 50m</span>
+                            <span class="route-info text-blue">Availability: Sleeper, 3A, 2A</span>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Bangalore to Chennai (Metro/Business) - Shatabdi Express -->
+                    <div class="route-card glass-card" data-categories="all metro business">
+                        <div class="card-image-placeholder" style="background-image: url('shatabdi.png');">
+                            <span class="card-tag text-orange">88% Popular</span>
+                        </div>
+                        <div class="card-content">
+                            <h3>Bangalore <i class="fas fa-arrow-right"></i> Chennai Central</h3>
+                            <p class="route-stations">SBC to MAS | Train 22682 (Shatabdi Express)</p>
+                            <span class="route-info text-green">Avg. Journey: 4h 55m</span>
+                            <span class="route-info text-blue">Availability: CC, EC</span>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: Kolkata to Puri (Tourist/Pilgrimage) -->
+                    <div class="route-card glass-card" data-categories="all tourist pilgrimage">
+                        <div class="card-image-placeholder" style="background-image: url('chennaiexpress.png');">
+                            <span class="card-tag text-purple">92% Popular</span>
+                        </div>
+                        <div class="card-content">
+                            <h3>Howrah <i class="fas fa-arrow-right"></i> Puri</h3>
+                            <p class="route-stations">HWH to Puri | Train 12837 (Puri Express)</p>
+                            <span class="route-info text-green">Avg. Journey: 7h 40m</span>
+                            <span class="route-info text-blue">Availability: Sleeper, 3A</span>
+                        </div>
+                    </div>
+
+                    <!-- Card 4: Jaipur to Udaipur (Tourist) -->
+                    <div class="route-card glass-card" data-categories="all tourist">
+                        <div class="card-image-placeholder" style="background-image: url('bg.png');">
+                            <span class="card-tag text-blue">80% Popular</span>
+                        </div>
+                        <div class="card-content">
+                            <h3>Jaipur <i class="fas fa-arrow-right"></i> Udaipur City</h3>
+                            <p class="route-stations">JP to UDZ | Train 12981 (Superfast Exp)</p>
+                            <span class="route-info text-green">Avg. Journey: 7h 20m</span>
+                            <span class="route-info text-blue">Availability: 3A, 2A</span>
+                        </div>
+                    </div>
+
+                    <!-- Card 5: New Delhi to Patna (Metro/Business) -->
+                    <div class="route-card glass-card" data-categories="all metro business">
+                        <div class="card-image-placeholder" style="background-image: url('patna.png');">
+                            <span class="card-tag text-orange">75% Popular</span>
+                        </div>
+                        <div class="card-content">
+                            <h3>New Delhi <i class="fas fa-arrow-right"></i> Patna Jn</h3>
+                            <p class="route-stations">NDLS to PNBE | Train 12392 (Shramjeevi Exp)</p>
+                            <span class="route-info text-green">Avg. Journey: 14h 30m</span>
+                            <span class="route-info text-blue">Availability: Sleeper, 3A, 2A</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="features-section" id="features">
+            <div class="container">
+                <h2>Why Choose the Reimagined IRCTC?</h2>
+                <div class="features-grid">
+                    <div class="feature-card glass-card">
+                        <i class="fas fa-ticket text-green"></i>
+                        <h3>Simpler Booking</h3>
+                        <p>Intuitive 3-step process to book your journey quickly and efficiently.</p>
+                    </div>
+                    <div class="feature-card glass-card">
+                        <i class="fas fa-wifi-slash text-blue"></i>
+                        <h3>Low Data Working</h3>
+                        <p>Access your tickets and basic info even without an internet connection.</p>
+                    </div>
+                    <div class="feature-card glass-card">
+                        <i class="fas fa-clock text-orange"></i>
+                        <h3>Real-time Updates</h3>
+                        <p>Instant seat availability, fare updates, and accurate train running status.</p>
+                    </div>
+                    <div class="feature-card glass-card">
+                        <i class="fas fa-headset text-purple"></i>
+                        <h3>AI Assistant</h3>
+                        <p>Voice and regional language support for instant queries and personalized help.</p>
+                    </div>
+                    <div class="feature-card glass-card">
+                        <i class="fas fa-battery-half text-yellow"></i>
+                        <h3>Lite Mode (Ad-free)</h3>
+                        <p>A minimalist, fast-loading interface that saves data and boosts speed.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="lite-mode-callout">
+            <div class="container">
+                <button class="btn btn-lite-mode glass-card" onclick="toggleLiteMode()">
+                    <i class="fas fa-bolt"></i> Switch to Lite Mode (Save Data & Go Faster)
+                </button>
+                <p>Experience ultra-fast booking with a minimal layout.</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Booking Modal - Add this to your HTML body -->
+    <div id="booking-modal" class="booking-modal-overlay" style="display:none;">
+        <div class="booking-modal-content">
+            <button class="booking-modal-close" onclick="hideBookingModal()">&times;</button>
+    
+            <div class="booking-modal-header">
+                <h3 class="booking-modal-title">
+                    <i class="fas fa-ticket-alt"></i>
+                    Book Your Journey: <span id="route-display">Delhi → Mumbai</span>
+                </h3>
+            </div>
+    
+            <!-- Progress Steps -->
+            <div class="booking-progress-container">
+                <div class="booking-progress-step active" id="progress-step-1">
+                    <div class="step-circle">1</div>
+                    <div class="step-label">Select Train & Class</div>
+                </div>
+                <div class="booking-progress-line"></div>
+                <div class="booking-progress-step" id="progress-step-2">
+                    <div class="step-circle">2</div>
+                    <div class="step-label">Passenger Details</div>
+                </div>
+                <div class="booking-progress-line"></div>
+                <div class="booking-progress-step" id="progress-step-3">
+                    <div class="step-circle">3</div>
+                    <div class="step-label">Payment</div>
+                </div>
+            </div>
+    
+            <!-- Step 1: Select Train & Class -->
+            <div class="booking-step active" id="booking-step-1">
+                <div class="train-info-card">
+                    <div class="train-number">12020</div>
+                    <div class="train-name">SHATABDI EXPRESS</div>
+                    <div class="train-route">
+                        <span id="step1-from">NDLS</span> → <span id="step1-to">LKO</span>
+                    </div>
+                    <div class="train-details">
+                        <span><i class="fas fa-clock"></i> Travel Time: 6h 30m</span>
+                        <span><i class="fas fa-calendar"></i> Date: <span id="step1-date">2025-10-30</span></span>
+                    </div>
+                </div>
+    
+                <div class="class-selection-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Class</th>
+                                <th>Availability</th>
+                                <th>Fare (per person)</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>CC</strong><br><small>Chair Car</small></td>
+                                <td><span class="badge badge-success">AVL 120</span></td>
+                                <td><strong>₹1,050</strong></td>
+                                <td>
+                                    <button class="btn-select" data-class="CC" data-fare="1050"
+                                        onclick="selectClass('CC', 1050)">
+                                        Select
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>EC</strong><br><small>Executive Chair</small></td>
+                                <td><span class="badge badge-warning">RAC 10</span></td>
+                                <td><strong>₹1,800</strong></td>
+                                <td>
+                                    <button class="btn-select" data-class="EC" data-fare="1800"
+                                        onclick="selectClass('EC', 1800)">
+                                        Select
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>3A</strong><br><small>AC 3 Tier</small></td>
+                                <td><span class="badge badge-success">AVL 45</span></td>
+                                <td><strong>₹850</strong></td>
+                                <td>
+                                    <button class="btn-select" data-class="3A" data-fare="850"
+                                        onclick="selectClass('3A', 850)">
+                                        Select
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>2A</strong><br><small>AC 2 Tier</small></td>
+                                <td><span class="badge badge-danger">WL 5</span></td>
+                                <td><strong>₹1,200</strong></td>
+                                <td>
+                                    <button class="btn-select" data-class="2A" data-fare="1200"
+                                        onclick="selectClass('2A', 1200)">
+                                        Waitlist
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+    
+                <div class="booking-navigation">
+                    <div></div>
+                    <button class="btn btn-primary" onclick="proceedToStep(2)">
+                        Proceed to Passenger Details <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+    
+            <!-- Step 2: Passenger Details -->
+            <div class="booking-step" id="booking-step-2">
+                <div class="selection-summary">
+                    <i class="fas fa-check-circle"></i>
+                    Selected: <strong id="selected-class-display">CC</strong> Class -
+                    ₹<span id="selected-fare-display">1050</span> per person
+                </div>
+    
+                <div class="contact-details-section">
+                    <h4><i class="fas fa-phone"></i> Contact Details</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="contact-mobile">Mobile Number *</label>
+                            <input type="tel" id="contact-mobile" class="form-control" placeholder="10-digit mobile number"
+                                pattern="[0-9]{10}" required>
+                            <small>Booking confirmation will be sent to this number</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="contact-email">Email Address *</label>
+                            <input type="email" id="contact-email" class="form-control" placeholder="your.email@example.com"
+                                required>
+                            <small>E-ticket will be sent to this email</small>
+                        </div>
+                    </div>
+                </div>
+    
+                <div class="passengers-section">
+                    <h4><i class="fas fa-users"></i> Passenger Details</h4>
+    
+                    <!-- Passenger 1 -->
+                    <div class="passenger-card">
+                        <div class="passenger-header">Passenger 1</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="passenger1-name">Full Name *</label>
+                                <input type="text" id="passenger1-name" class="form-control" placeholder="As per ID proof"
+                                    required>
+                            </div>
+                            <div class="form-group">
+                                <label for="passenger1-age">Age *</label>
+                                <input type="number" id="passenger1-age" class="form-control" placeholder="Age" min="1"
+                                    max="120" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="passenger1-gender">Gender *</label>
+                                <select id="passenger1-gender" class="form-control" required>
+                                    <option value="">Select</option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="passenger1-berth">Berth Preference</label>
+                                <select id="passenger1-berth" class="form-control">
+                                    <option value="">No Preference</option>
+                                    <option value="lower">Lower</option>
+                                    <option value="middle">Middle</option>
+                                    <option value="upper">Upper</option>
+                                    <option value="side-lower">Side Lower</option>
+                                    <option value="side-upper">Side Upper</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <!-- Passenger 2 -->
+                    <div class="passenger-card">
+                        <div class="passenger-header">
+                            Passenger 2
+                            <button type="button" class="btn-remove-passenger" onclick="removePassenger(2)">
+                                <i class="fas fa-times"></i> Remove
+                            </button>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="passenger2-name">Full Name *</label>
+                                <input type="text" id="passenger2-name" class="form-control" placeholder="As per ID proof"
+                                    required>
+                            </div>
+                            <div class="form-group">
+                                <label for="passenger2-age">Age *</label>
+                                <input type="number" id="passenger2-age" class="form-control" placeholder="Age" min="1"
+                                    max="120" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="passenger2-gender">Gender *</label>
+                                <select id="passenger2-gender" class="form-control" required>
+                                    <option value="">Select</option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="passenger2-berth">Berth Preference</label>
+                                <select id="passenger2-berth" class="form-control">
+                                    <option value="">No Preference</option>
+                                    <option value="lower">Lower</option>
+                                    <option value="middle">Middle</option>
+                                    <option value="upper">Upper</option>
+                                    <option value="side-lower">Side Lower</option>
+                                    <option value="side-upper">Side Upper</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <button type="button" class="btn btn-add-passenger" onclick="addPassenger()">
+                        <i class="fas fa-plus"></i> Add Another Passenger
+                    </button>
+                </div>
+    
+                <div class="booking-navigation">
+                    <button class="btn btn-secondary" onclick="proceedToStep(1)">
+                        <i class="fas fa-arrow-left"></i> Back to Train Selection
+                    </button>
+                    <button class="btn btn-primary" onclick="proceedToStep(3)">
+                        Proceed to Payment <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+    
+            <!-- Step 3: Payment -->
+            <div class="booking-step" id="booking-step-3">
+                <div class="booking-summary-card">
+                    <h4><i class="fas fa-file-invoice"></i> Booking Summary</h4>
+                    <div class="summary-row">
+                        <span>Train:</span>
+                        <strong>12020 SHATABDI EXPRESS</strong>
+                    </div>
+                    <div class="summary-row">
+                        <span>Route:</span>
+                        <strong><span id="summary-from">NDLS</span> → <span id="summary-to">LKO</span></strong>
+                    </div>
+                    <div class="summary-row">
+                        <span>Date:</span>
+                        <strong id="summary-date">2025-10-30</strong>
+                    </div>
+                    <div class="summary-row">
+                        <span>Class:</span>
+                        <strong id="summary-class">CC</strong>
+                    </div>
+                    <div class="summary-row">
+                        <span>Passengers:</span>
+                        <strong><span id="summary-passengers">2</span> person(s)</strong>
+                    </div>
+                    <div class="summary-row">
+                        <span>Base Fare:</span>
+                        <strong>₹<span id="summary-base-fare">2100</span></strong>
+                    </div>
+                    <div class="summary-row">
+                        <span>Convenience Fee:</span>
+                        <strong>₹<span id="summary-convenience-fee">40</span></strong>
+                    </div>
+                    <div class="summary-row total-row">
+                        <span>Total Amount:</span>
+                        <strong class="total-amount">₹<span id="summary-total">2140</span></strong>
+                    </div>
+                </div>
+    
+                <div class="payment-section">
+                    <h4><i class="fas fa-credit-card"></i> Select Payment Method</h4>
+    
+                    <div class="payment-options">
+                        <div class="payment-option" data-method="card" onclick="selectPaymentMethod('card')">
+                            <div class="payment-icon">💳</div>
+                            <div class="payment-label">Credit / Debit Card</div>
+                            <div class="payment-radio">
+                                <input type="radio" name="payment-method" value="card" id="payment-card">
+                            </div>
+                        </div>
+    
+                        <div class="payment-option" data-method="netbanking" onclick="selectPaymentMethod('netbanking')">
+                            <div class="payment-icon">🏦</div>
+                            <div class="payment-label">Net Banking</div>
+                            <div class="payment-radio">
+                                <input type="radio" name="payment-method" value="netbanking" id="payment-netbanking">
+                            </div>
+                        </div>
+    
+                        <div class="payment-option" data-method="upi" onclick="selectPaymentMethod('upi')">
+                            <div class="payment-icon">📱</div>
+                            <div class="payment-label">UPI</div>
+                            <div class="payment-radio">
+                                <input type="radio" name="payment-method" value="upi" id="payment-upi">
+                            </div>
+                        </div>
+    
+                        <div class="payment-option" data-method="wallet" onclick="selectPaymentMethod('wallet')">
+                            <div class="payment-icon">👛</div>
+                            <div class="payment-label">Wallets</div>
+                            <div class="payment-radio">
+                                <input type="radio" name="payment-method" value="wallet" id="payment-wallet">
+                            </div>
+                        </div>
+                    </div>
+    
+                    <!-- Payment Details Forms -->
+                    <div id="payment-details-container">
+                        <!-- Card Payment -->
+                        <div id="payment-details-card" class="payment-details" style="display:none;">
+                            <h5>Enter Card Details</h5>
+                            <div class="form-group">
+                                <label for="card-number">Card Number</label>
+                                <input type="text" id="card-number" class="form-control" placeholder="1234 5678 9012 3456"
+                                    maxlength="19">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="card-expiry">Expiry Date</label>
+                                    <input type="text" id="card-expiry" class="form-control" placeholder="MM/YY"
+                                        maxlength="5">
+                                </div>
+                                <div class="form-group">
+                                    <label for="card-cvv">CVV</label>
+                                    <input type="password" id="card-cvv" class="form-control" placeholder="123"
+                                        maxlength="3">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="card-name">Cardholder Name</label>
+                                <input type="text" id="card-name" class="form-control" placeholder="Name on card">
+                            </div>
+                        </div>
+    
+                        <!-- Net Banking -->
+                        <div id="payment-details-netbanking" class="payment-details" style="display:none;">
+                            <h5>Select Your Bank</h5>
+                            <div class="form-group">
+                                <select id="bank-select" class="form-control">
+                                    <option value="">Select Bank</option>
+                                    <option value="sbi">State Bank of India</option>
+                                    <option value="hdfc">HDFC Bank</option>
+                                    <option value="icici">ICICI Bank</option>
+                                    <option value="axis">Axis Bank</option>
+                                    <option value="pnb">Punjab National Bank</option>
+                                    <option value="bob">Bank of Baroda</option>
+                                    <option value="kotak">Kotak Mahindra Bank</option>
+                                    <option value="yes">Yes Bank</option>
+                                </select>
+                            </div>
+                            <p class="payment-note">
+                                <i class="fas fa-info-circle"></i>
+                                You will be redirected to your bank's website for authentication
+                            </p>
+                        </div>
+    
+                        <!-- UPI -->
+                        <div id="payment-details-upi" class="payment-details" style="display:none;">
+                            <h5>Enter UPI ID</h5>
+                            <div class="form-group">
+                                <input type="text" id="upi-id" class="form-control" placeholder="yourname@upi">
+                            </div>
+                            <p class="payment-note">
+                                <i class="fas fa-info-circle"></i>
+                                You will receive a collect request on your UPI app
+                            </p>
+                            <div class="upi-apps">
+                                <img src="https://via.placeholder.com/50x50?text=GPay" alt="Google Pay">
+                                <img src="https://via.placeholder.com/50x50?text=PhonePe" alt="PhonePe">
+                                <img src="https://via.placeholder.com/50x50?text=Paytm" alt="Paytm">
+                                <img src="https://via.placeholder.com/50x50?text=BHIM" alt="BHIM">
+                            </div>
+                        </div>
+    
+                        <!-- Wallet -->
+                        <div id="payment-details-wallet" class="payment-details" style="display:none;">
+                            <h5>Select Wallet</h5>
+                            <div class="form-group">
+                                <select id="wallet-select" class="form-control">
+                                    <option value="">Select Wallet</option>
+                                    <option value="paytm">Paytm Wallet</option>
+                                    <option value="phonepe">PhonePe Wallet</option>
+                                    <option value="mobikwik">MobiKwik</option>
+                                    <option value="freecharge">Freecharge</option>
+                                </select>
+                            </div>
+                            <p class="payment-note">
+                                <i class="fas fa-info-circle"></i>
+                                You will be redirected to complete the payment
+                            </p>
+                        </div>
+                    </div>
+                </div>
+    
+                <div class="terms-acceptance">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="accept-terms">
+                        <span>I accept the <a href="#" target="_blank">Terms & Conditions</a> and <a href="#"
+                                target="_blank">Cancellation Policy</a></span>
+                    </label>
+                </div>
+    
+                <div class="booking-navigation">
+                    <button class="btn btn-secondary" onclick="proceedToStep(2)">
+                        <i class="fas fa-arrow-left"></i> Back to Passenger Details
+                    </button>
+                    <button class="btn btn-success" onclick="makePayment()">
+                        <i class="fas fa-lock"></i> Pay ₹<span id="final-amount">2140</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-main">
+                <div class="footer-logo-section">
+                    <i class="fas fa-train"></i> <strong>IRCTC Reimagined</strong>
+                    <p>Connecting India with accessible, intelligent railway booking solutions for everyone.</p>
+                    <a href="#" class="btn btn-primary footer-cert-btn">Government Certified</a>
+                </div>
+                <div class="footer-links-section">
+                    <div class="footer-column">
+                        <h4>Quick Links</h4>
+                        <ul>
+                            <li><a href="#">Book Tickets</a></li>
+                            <li><a href="#">My Journeys</a></li>
+                            <li><a href="#">Accessibility</a></li>
+                            <li><a href="#">AI Assistant</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Support</h4>
+                        <ul>
+                            <li><a href="#">Help Center</a></li>
+                            <li><a href="#">Contact Us</a></li>
+                            <li><a href="#">Accessibility Support</a></li>
+                            <li><a href="#">System Status</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Contact</h4>
+                        <ul>
+                            <li><i class="fas fa-phone-alt"></i> 139 (Railway Enquiry)</li>
+                            <li><i class="fas fa-envelope"></i> support@irctc.co.in</li>
+                            <li><i class="fas fa-globe"></i> 18 Languages Supported</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 IRCTC Reimagined - Hackathon Project</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- AI Chatbot -->
+    <div id="chatbot">
+        <button id="chatbot-btn"><i class="fas fa-robot"></i></button>
+        <div id="chat-window" class="hidden">
+            <div class="chat-header">
+                <h4>IRCTC Assistant</h4>
+                <button id="close-chat">&times;</button>
+            </div>
+            <div class="chat-messages" id="chat-messages">
+                <div class="bot-msg">
+                    👋 Hi! I'm your IRCTC Assistant. How can I help you today?
+                </div>
+            </div>
+            <div class="chat-input">
+                <input type="text" id="user-input" placeholder="Type your message..." />
+                <button id="send-btn"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
